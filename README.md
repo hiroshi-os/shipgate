@@ -16,6 +16,8 @@ Reseed: `docker compose down -v` then up again (SQLite lives in a volume).
 You will **fail** a promote on bad health, **pass** it after restore, **approve** as a second
 operator, then **rollback**. Audit rows appear for each step.
 
+![Shipgate board](docs/screenshots/01-board.png)
+
 ### UI (Loom this)
 
 1. Open [http://localhost:3000](http://localhost:3000). Operator = `alice`.
@@ -23,10 +25,14 @@ operator, then **rollback**. Audit rows appear for each step.
 3. **Demo lab → Break staging probes.** Ready + payments go 503.
 4. Click the **Promote** gate between staging and prod. The gate **closes** (HTTP 409). Probe
    rows show `fail · HTTP 503`. Flight recorder: `promotion.blocked`.
+
+![Health gate closed](docs/screenshots/03-gate-closed.png)
 5. **Restore probes.** Promote again. Status **pending approval** (alice cannot approve herself).
 6. Switch operator to **bob**. Click **Approve**. Prod version pointer becomes `v1.4.2`.
 7. Open **Flight recorder**. You should see `requested → blocked`, then `requested → queued →
    approved → succeeded`, with actor, from→to, version, result.
+
+![Flight recorder](docs/screenshots/06-audit.png)
 8. Click **Rollback**. [http://localhost:8090/hooks](http://localhost:8090/hooks) shows the JSON
    payload. Prod pointer returns to `v1.4.1`.
 
