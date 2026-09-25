@@ -1,0 +1,41 @@
+services:
+  demo-app:
+    build: ./demo-app
+    ports:
+      - "8088:8080"
+    environment:
+      VERSION: v1.4.2
+
+  hooks:
+    build: ./hooks
+    ports:
+      - "8090:8090"
+
+  api:
+    build: ./api
+    ports:
+      - "8080:8080"
+    environment:
+      LISTEN_ADDR: ":8080"
+      DATABASE_PATH: /data/shipgate.db
+      DEMO_SEED: "true"
+      DEMO_CONTROLS: "true"
+      DEMO_APP_URL: http://demo-app:8080
+      ROLLBACK_SINK_URL: http://hooks:8090/hooks/rollback
+    volumes:
+      - shipgate-data:/data
+    depends_on:
+      - demo-app
+      - hooks
+
+  web:
+    build: ./web
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: http://api:8080
+    depends_on:
+      - api
+
+volumes:
+  shipgate-data:
